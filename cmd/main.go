@@ -21,7 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	choice, mode, err := util.Choose(paths, conf, util.Website)
+	choice, mode, err := util.Choose(paths, paths, conf, []string{}, util.Website)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)

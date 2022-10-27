@@ -18,7 +18,8 @@ const (
 	Quit
 )
 
-const quit = "quit"
+const quit = "❌ quit"
+const back = "🔙 back"
 
 func OpenURL(url string, conf *Config) error {
 	fullArgs := append(conf.BrowserCommand, url)
@@ -35,7 +36,11 @@ func makePreview(keys []string, choices map[string]interface{}, mode Mode) func(
 
 		chosenKey := keys[idx]
 		if chosenKey == quit {
-			return "See ya"
+			return "👋 See ya"
+		}
+
+		if chosenKey == back {
+			return "🔙"
 		}
 
 		switch val := choices[chosenKey]; val.(type) {
@@ -62,14 +67,15 @@ func makePreview(keys []string, choices map[string]interface{}, mode Mode) func(
 	}
 }
 
-func Choose(choices map[string]interface{}, conf *Config, mode Mode) (string, Mode, error) {
+func Choose(all_paths map[string]interface{}, choices map[string]interface{}, conf *Config, previous_keys []string, mode Mode) (string, Mode, error) {
 	keys := []string{}
 	for key := range choices {
 		keys = append(keys, key)
 	}
 	keys = append(keys, quit)
+	keys = append(keys, back)
 
-	choice, err := fuzzyfinder.Find(keys, func(idx int) string { return keys[idx] }, fuzzyfinder.WithPreviewWindow(makePreview(keys, choices, mode)))
+	choice, err := fuzzyfinder.Find(keys, func(idx int) string { return keys[idx] }, fuzzyfinder.WithPromptString("👉 "), fuzzyfinder.WithPreviewWindow(makePreview(keys, choices, mode)))
 	if err != nil {
 		return "", None, err
 	}
@@ -77,6 +83,21 @@ func Choose(choices map[string]interface{}, conf *Config, mode Mode) (string, Mo
 	chosenKey := keys[choice]
 	if chosenKey == quit {
 		return "", Quit, nil
+	}
+
+	if chosenKey == back {
+		prev_choice := all_paths
+		if len(previous_keys) == 0 {
+			previous_keys = []string{}
+		} else {
+			previous_keys = previous_keys[:len(previous_keys)-1]
+		}
+
+		for _, prev := range previous_keys {
+			prev_choice = prev_choice[prev].(map[string]interface{})
+		}
+
+		return Choose(all_paths, prev_choice, conf, previous_keys, mode)
 	}
 
 	switch val := choices[chosenKey]; val.(type) {
@@ -92,6 +113,6 @@ func Choose(choices map[string]interface{}, conf *Config, mode Mode) (string, Mo
 			mode = Website
 		}
 
-		return Choose(val.(map[string]interface{}), conf, mode)
+		return Choose(all_paths, val.(map[string]interface{}), conf, append(previous_keys, chosenKey), mode)
 	}
 }
