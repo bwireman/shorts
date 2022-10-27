@@ -14,7 +14,14 @@ func main() {
 		fmt.Print(err)
 		os.Exit(1)
 	}
-	choice, mode, err := util.Choose(conf, util.Website)
+
+	paths, err := util.LoadPaths(fmt.Sprintf("%s/.shorts/paths.json", home))
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+
+	choice, mode, err := util.Choose(paths, conf, util.Website)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
@@ -26,8 +33,10 @@ func main() {
 	case util.Directory:
 		fmt.Printf("cd %s", choice)
 	case util.Website:
-		util.OpenURL(choice)
+		util.OpenURL(choice, conf)
 		fmt.Printf("echo %s", choice)
+	case util.Quit:
+		fmt.Print("echo 'see ya'")
 	default:
 		fmt.Print("echo 'An error occurred'")
 		os.Exit(1)

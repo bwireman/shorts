@@ -2,8 +2,12 @@ package util
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
+
 	fuzzyfinder "github.com/ktr0731/go-fuzzyfinder"
 )
 
@@ -14,29 +18,62 @@ const (
 	Website
 	Directory
 	Binary
+	Quit
 )
 
-func OpenURL(url string) error {
-	return exec.Command("firefox", "--new-tab", url).Run()
+func OpenURL(url string, conf *Config) error {
+	fullArgs := append(conf.BrowserCommand, url)
+
+	cmd := fullArgs[0]
+	args := fullArgs[1:]
+
+	return exec.Command(cmd, args...).Run()
 }
 
-func Choose(choices map[string]interface{}, mode Mode) (string, Mode, error) {
+const quit = "quit"
+
+func Choose(choices map[string]interface{}, conf *Config, mode Mode) (string, Mode, error) {
 	keys := []string{}
 	for key := range choices {
 		keys = append(keys, key)
 	}
+	keys = append(keys, quit)
 
 	choice, err := fuzzyfinder.Find(keys, func(idx int) string { return keys[idx] }, fuzzyfinder.WithPreviewWindow(func(idx, _, _ int) string {
 		if idx == -1 {
 			return "nil"
 		}
 
-		preview, err := json.MarshalIndent(choices[keys[idx]], "", " ")
-		if err != nil {
-			return "Could not load preview"
+		chosenKey := keys[idx]
+		if chosenKey == quit {
+			return "See ya"
 		}
 
-		return string(preview)
+		val := choices[chosenKey]
+
+		switch val.(type) {
+
+		case string:
+			emoji:= "🚀"
+
+			switch mode {
+			case Directory:
+				emoji = "📁" 
+			case Binary:
+				emoji = "🖲️" 
+			default:
+			}
+			
+			return fmt.Sprintf("%s %s", emoji, val)
+
+		default:
+			preview, err := json.MarshalIndent(val, "", " ")
+			if err != nil {
+				return "Could not load preview"
+			}
+			return string(preview)
+		}
+
 	}))
 
 	if err != nil {
@@ -44,25 +81,29 @@ func Choose(choices map[string]interface{}, mode Mode) (string, Mode, error) {
 	}
 
 	chosenKey := keys[choice]
+	if chosenKey == quit {
+		return "", Quit, nil
+	}
+
 	val := choices[chosenKey]
 	switch val.(type) {
 	case string:
 		return val.(string), mode, nil
 	default:
 		switch chosenKey {
-		case "bin":
+		case conf.BinaryDirName:
 			mode = Binary
-		case "directories":
+		case conf.DirectoriesDirName:
 			mode = Directory
 		default:
 			mode = Website
 		}
 
-		return Choose(val.(map[string]interface{}), mode)
+		return Choose(val.(map[string]interface{}), conf, mode)
 	}
 }
 
-func LoadConfig(path string) (map[string]interface{}, error) {
+func LoadPaths(path string) (map[string]interface{}, error) {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -75,4 +116,55 @@ func LoadConfig(path string) (map[string]interface{}, error) {
 	}
 
 	return payload, nil
+}
+
+type Config struct {
+	BrowserCommand     []string `json:"BrowserCommand,omitempty"`
+	BinaryDirName      string   `json:"BinaryDirName,omitempty"`
+	DirectoriesDirName string   `json:"DirectoriesDirName,omitempty"`
+}
+
+func checkFileExists(filePath string) bool {
+	_, error := os.Stat(filePath)
+	return !errors.Is(error, os.ErrNotExist)
+}
+
+var default_command = []string{"xdg-open"}
+
+const default_dir_val = "bin"
+const default_bin_val = "directories"
+
+func LoadConfig(path string) (*Config, error) {
+	if !checkFileExists(path) {
+		return &Config{
+			BrowserCommand:     default_command,
+			BinaryDirName:      "bin",
+			DirectoriesDirName: "directories",
+		}, nil
+	}
+
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	conf := new(Config)
+	err = json.Unmarshal(content, &conf)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(conf.BrowserCommand) == 0 {
+		conf.BrowserCommand = default_command
+	}
+
+	if len(conf.BinaryDirName) == 0 {
+		conf.BinaryDirName = default_bin_val
+	}
+
+	if len(conf.DirectoriesDirName) == 0 {
+		conf.DirectoriesDirName = default_dir_val
+	}
+
+	return conf, nil
 }
