@@ -72,8 +72,11 @@ func Choose(all_paths map[string]interface{}, choices map[string]interface{}, co
 	for key := range choices {
 		keys = append(keys, key)
 	}
+
 	keys = append(keys, quit)
-	keys = append(keys, back)
+	if len(previous_keys) > 0 {
+		keys = append(keys, back)
+	}
 
 	choice, err := fuzzyfinder.Find(keys, func(idx int) string { return keys[idx] }, fuzzyfinder.WithPromptString("👉 "), fuzzyfinder.WithPreviewWindow(makePreview(keys, choices, mode)))
 	if err != nil {

@@ -3,19 +3,20 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 
 	util "github.com/bwireman/shorts/pkg/util"
 )
 
 func main() {
 	home := os.Getenv("HOME")
-	conf, err := util.LoadConfig(fmt.Sprintf("%s/.shorts/config.json", home))
+	conf, err := util.LoadConfig(path.Join(home, ".shorts", "config.json"))
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 	}
 
-	paths, err := util.LoadPaths(fmt.Sprintf("%s/.shorts/paths.json", home))
+	paths, err := util.LoadPaths(path.Join(home, ".shorts", "paths.json"))
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
@@ -36,9 +37,9 @@ func main() {
 		util.OpenURL(choice, conf)
 		fmt.Printf("echo %s", choice)
 	case util.Quit:
-		fmt.Print("echo 'see ya'")
+		fmt.Print("echo 👋 See ya")
 	default:
-		fmt.Print("echo 'An error occurred'")
+		fmt.Print("echo An error occurred")
 		os.Exit(1)
 	}
 }
