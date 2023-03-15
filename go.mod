@@ -2,7 +2,10 @@ module github.com/bwireman/shorts
 
 go 1.18
 
-require github.com/ktr0731/go-fuzzyfinder v0.7.0
+require (
+	github.com/ktr0731/go-fuzzyfinder v0.7.0
+	golang.org/x/exp v0.0.0-20230314191032-db074128a8ec
+)
 
 require (
 	github.com/gdamore/encoding v1.0.0 // indirect

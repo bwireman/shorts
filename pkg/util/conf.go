@@ -70,3 +70,30 @@ func LoadConfig(path string) (*Config, error) {
 
 	return conf, nil
 }
+
+func LoadFavorites(path string) (map[string]int, error) {
+	if !checkFileExists(path) {
+		f, err := os.Create(path)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err = f.WriteString("{}"); err != nil {
+			return nil, err
+		}
+
+		return map[string]int{}, nil
+	}
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload map[string]int
+	if err = json.Unmarshal(content, &payload); err != nil {
+		return nil, err
+	}
+
+	return payload, nil
+}
