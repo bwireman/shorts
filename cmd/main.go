@@ -3,39 +3,32 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
 
 	util "github.com/bwireman/shorts/pkg/util"
 )
 
 func main() {
-	home := os.Getenv("HOME")
-	conf, err := util.LoadConfig(path.Join(home, ".shorts", "config.json"))
+	conf, err := util.LoadConfig(util.ConfigPath)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 	}
 
-	paths, err := util.LoadPaths(path.Join(home, ".shorts", "paths.json"))
+	paths, err := util.LoadPaths(util.PathsPath)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 	}
 
-	faves_path := path.Join(home, ".shorts", "faves.json")
-	faves, err := util.GetFavorites(faves_path)
+	faves, err := util.GetFavorites(util.FavesPath)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 	}
 
-	faves_map := map[string]interface{}{}
-
-	for _, f := range faves {
-		faves_map[f] = f
+	if len(faves) > 0 {
+		paths[util.Faves] = faves
 	}
-
-	paths["faves"] = faves_map
 
 	choice, mode, err := util.Choose(paths, paths, conf, []string{}, util.Website)
 	if err != nil {
@@ -49,7 +42,6 @@ func main() {
 	case util.Directory:
 		fmt.Printf("cd %s", choice)
 	case util.Website:
-		util.UpdateFavorites(faves_path, choice)
 		util.OpenURL(choice, conf)
 		fmt.Printf("echo %s", choice)
 	case util.Quit:

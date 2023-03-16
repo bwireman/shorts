@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ktr0731/go-fuzzyfinder v0.7.0
-	golang.org/x/exp v0.0.0-20230314191032-db074128a8ec
+	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
 )
 
 require (

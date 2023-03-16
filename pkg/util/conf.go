@@ -71,7 +71,7 @@ func LoadConfig(path string) (*Config, error) {
 	return conf, nil
 }
 
-func LoadFavorites(path string) (map[string]int, error) {
+func LoadFavorites(path string) (map[string]Favorite, error) {
 	if !checkFileExists(path) {
 		f, err := os.Create(path)
 		if err != nil {
@@ -82,7 +82,7 @@ func LoadFavorites(path string) (map[string]int, error) {
 			return nil, err
 		}
 
-		return map[string]int{}, nil
+		return map[string]Favorite{}, nil
 	}
 
 	content, err := os.ReadFile(path)
@@ -90,7 +90,7 @@ func LoadFavorites(path string) (map[string]int, error) {
 		return nil, err
 	}
 
-	var payload map[string]int
+	var payload map[string]Favorite
 	if err = json.Unmarshal(content, &payload); err != nil {
 		return nil, err
 	}

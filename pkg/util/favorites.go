@@ -3,41 +3,51 @@ package util
 import (
 	"encoding/json"
 	"os"
-
 	"sort"
+	"strings"
 
 	"golang.org/x/exp/maps"
 )
 
-func GetFavorites(path string) ([]string, error) {
+func GetFavorites(path string) (map[string]interface{}, error) {
 	payload, err := LoadFavorites(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return maps.Keys(payload), nil
+	favorites := map[string]interface{}{}
+	for k, v := range payload {
+		favorites[k] = v.Url
+	}
+
+	return favorites, nil
 }
 
-func UpdateFavorites(path, newest string) error {
+type Favorite struct {
+	Count int
+	Url   string
+}
+
+func UpdateFavorites(path string, keys []string, newest string) error {
 	favorites, err := LoadFavorites(path)
 	if err != nil {
 		return err
 	}
 
-	if val, ok := favorites[newest]; ok {
-		favorites[newest] = val + 1
+	key_path := strings.Join(keys, " |> ")
+	if val, ok := favorites[key_path]; ok {
+		favorites[key_path] = Favorite{Url: newest, Count: val.Count + 1}
 	} else {
-		favorites[newest] = 1
+		favorites[key_path] = Favorite{Url: newest, Count: 1}
 	}
 
-	keys := maps.Keys(favorites)
-
-	sort.SliceStable(keys, func(i, j int) bool {
-		return favorites[keys[i]] < favorites[keys[j]]
+	map_keys := maps.Keys(favorites)
+	sort.SliceStable(map_keys, func(i, j int) bool {
+		return favorites[map_keys[i]].Count < favorites[map_keys[j]].Count
 	})
 
-	new_favorites := map[string]int{}
-	for i, k := range keys {
+	new_favorites := map[string]Favorite{}
+	for i, k := range map_keys {
 		if i < 10 {
 			new_favorites[k] = favorites[k]
 		}
