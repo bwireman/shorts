@@ -12,11 +12,16 @@ var ConfigPath string
 var PathsPath string
 
 // constants
-var Faves = "favorites"
+const Faves = "favorites"
+const SeeYa = "👋 See ya"
+
+var default_command = []string{"xdg-open"}
 
 const quit = "❌ quit"
 const back = "🔙 back"
 const shorts_config_path = ".shorts"
+const default_dir_val = "directories"
+const default_bin_val = "bin"
 
 func init() {
 	home, err := os.UserHomeDir()

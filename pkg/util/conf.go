@@ -13,11 +13,6 @@ type Config struct {
 	DirectoriesDirName string   `json:"DirectoriesDirName,omitempty"`
 }
 
-var default_command = []string{"xdg-open"}
-
-const default_dir_val = "bin"
-const default_bin_val = "directories"
-
 func LoadPaths(path string) (map[string]interface{}, error) {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -41,8 +36,8 @@ func LoadConfig(path string) (*Config, error) {
 	if !checkFileExists(path) {
 		return &Config{
 			BrowserCommand:     default_command,
-			BinaryDirName:      "bin",
-			DirectoriesDirName: "directories",
+			BinaryDirName:      default_bin_val,
+			DirectoriesDirName: default_dir_val,
 		}, nil
 	}
 
