@@ -5,13 +5,29 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/exp/maps"
 )
 
 type Favorite struct {
-	Count int
-	Url   string
+	Count   int
+	Url     string
+	LastUse int64
+}
+
+func sortFaves(favorites map[string]Favorite) {
+	map_keys := maps.Keys(favorites)
+	sort.SliceStable(map_keys, func(i, j int) bool {
+		l := favorites[map_keys[i]]
+		r := favorites[map_keys[j]]
+
+		if l.Count == r.Count {
+			return l.LastUse < r.LastUse
+		} else {
+			return l.Count < r.Count
+		}
+	})
 }
 
 func GetFavorites(path string) (map[string]interface{}, error) {
@@ -20,9 +36,13 @@ func GetFavorites(path string) (map[string]interface{}, error) {
 		return nil, err
 	}
 
+	sortFaves(payload)
+	map_keys := maps.Keys(payload)
 	favorites := map[string]interface{}{}
-	for key, fav := range payload {
-		favorites[key] = fav.Url
+	for idx, key := range map_keys {
+		if idx < 10 {
+			favorites[key] = payload[key].Url
+		}
 	}
 
 	return favorites, nil
@@ -36,24 +56,12 @@ func UpdateFavorites(path string, keys []string, newest string) error {
 
 	key_path := strings.Join(keys, " |> ")
 	if val, ok := favorites[key_path]; ok {
-		favorites[key_path] = Favorite{Url: newest, Count: val.Count + 1}
+		favorites[key_path] = Favorite{Url: newest, Count: val.Count + 1, LastUse: time.Now().Unix()}
 	} else {
-		favorites[key_path] = Favorite{Url: newest, Count: 1}
+		favorites[key_path] = Favorite{Url: newest, Count: 1, LastUse: time.Now().Unix()}
 	}
 
-	map_keys := maps.Keys(favorites)
-	sort.SliceStable(map_keys, func(i, j int) bool {
-		return favorites[map_keys[i]].Count < favorites[map_keys[j]].Count
-	})
-
-	new_favorites := map[string]Favorite{}
-	for idx, key := range map_keys {
-		if idx < 10 {
-			new_favorites[key] = favorites[key]
-		}
-	}
-
-	bin, err := json.Marshal(new_favorites)
+	bin, err := json.Marshal(favorites)
 	if err != nil {
 		return err
 	}

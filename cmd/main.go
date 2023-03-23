@@ -1,12 +1,18 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	util "github.com/bwireman/shorts/pkg/util"
 )
 
+var skipToFaves = false
+
 func main() {
+	flag.BoolVar(&skipToFaves, "faves", false, "skip to the most commonly used shortcuts")
+	flag.Parse()
+
 	conf, err := util.LoadConfig(util.ConfigPath)
 	util.MaybeExit(err)
 
@@ -16,11 +22,20 @@ func main() {
 	faves, err := util.GetFavorites(util.FavesPath)
 	util.MaybeExit(err)
 
-	if len(faves) > 0 {
+	hasFaves := len(faves) > 0
+
+	if hasFaves {
 		paths[util.Faves] = faves
 	}
 
-	choice, mode, err := util.Choose(paths, paths, conf, []string{}, util.Website)
+	options := paths
+	startingPath := []string{}
+	if skipToFaves && hasFaves {
+		startingPath = []string{util.Faves}
+		options = paths[util.Faves].(map[string]interface{})
+	}
+
+	choice, mode, err := util.Choose(paths, options, conf, startingPath, util.Website)
 	util.MaybeExit(err)
 
 	switch mode {
