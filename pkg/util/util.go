@@ -6,7 +6,7 @@ import (
 )
 
 func Exit(msg interface{}) {
-	fmt.Print(msg)
+	fmt.Printf("echo %s", msg)
 	os.Exit(1)
 }
 

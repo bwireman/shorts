@@ -9,6 +9,11 @@ import (
 	"golang.org/x/exp/maps"
 )
 
+type Favorite struct {
+	Count int
+	Url   string
+}
+
 func GetFavorites(path string) (map[string]interface{}, error) {
 	payload, err := LoadFavorites(path)
 	if err != nil {
@@ -16,16 +21,11 @@ func GetFavorites(path string) (map[string]interface{}, error) {
 	}
 
 	favorites := map[string]interface{}{}
-	for k, v := range payload {
-		favorites[k] = v.Url
+	for key, fav := range payload {
+		favorites[key] = fav.Url
 	}
 
 	return favorites, nil
-}
-
-type Favorite struct {
-	Count int
-	Url   string
 }
 
 func UpdateFavorites(path string, keys []string, newest string) error {
@@ -47,9 +47,9 @@ func UpdateFavorites(path string, keys []string, newest string) error {
 	})
 
 	new_favorites := map[string]Favorite{}
-	for i, k := range map_keys {
-		if i < 10 {
-			new_favorites[k] = favorites[k]
+	for idx, key := range map_keys {
+		if idx < 10 {
+			new_favorites[key] = favorites[key]
 		}
 	}
 

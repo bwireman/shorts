@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"os"
 	"path"
 )
@@ -25,10 +24,7 @@ const default_bin_val = "bin"
 
 func init() {
 	home, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
+	MaybeExit(err)
 
 	FavesPath = path.Join(home, shorts_config_path, "faves.json")
 	ConfigPath = path.Join(home, shorts_config_path, "config.json")
