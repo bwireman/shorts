@@ -3,7 +3,6 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/exp/slices"
 	"os/exec"
 
 	fuzzyfinder "github.com/ktr0731/go-fuzzyfinder"
@@ -106,10 +105,8 @@ func Choose(all_paths map[string]interface{}, choices map[string]interface{}, co
 		as_string := val.(string)
 
 		all_keys := append(previous_keys, chosenKey)
-		if !slices.Contains(all_keys, Faves) {
-			if err := UpdateFavorites(FavesPath, all_keys, as_string); err != nil {
-				return "", Quit, err
-			}
+		if err := UpdateFavorites(FavesPath, all_keys[1:], as_string); err != nil {
+			return "", Quit, err
 		}
 
 		return as_string, mode, nil
