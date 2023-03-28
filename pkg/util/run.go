@@ -6,6 +6,7 @@ import (
 	"os/exec"
 
 	fuzzyfinder "github.com/ktr0731/go-fuzzyfinder"
+	"golang.org/x/exp/slices"
 )
 
 type Mode = int
@@ -105,7 +106,11 @@ func Choose(all_paths map[string]interface{}, choices map[string]interface{}, co
 		as_string := val.(string)
 
 		all_keys := append(previous_keys, chosenKey)
-		if err := UpdateFavorites(FavesPath, all_keys[1:], as_string); err != nil {
+		if slices.Contains(all_keys, Faves) {
+			all_keys = all_keys[1:]
+		}
+
+		if err := UpdateFavorites(FavesPath, all_keys, as_string); err != nil {
 			return "", Quit, err
 		}
 
