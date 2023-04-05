@@ -40,7 +40,7 @@ func GetFavorites(path string) (map[string]interface{}, error) {
 	map_keys := maps.Keys(payload)
 	favorites := map[string]interface{}{}
 	for idx, key := range map_keys {
-		if idx < 10 {
+		if idx < 15 {
 			favorites[key] = payload[key].Url
 		}
 	}
