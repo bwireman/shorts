@@ -23,9 +23,9 @@ func sortFaves(favorites map[string]Favorite) {
 		r := favorites[map_keys[j]]
 
 		if l.Count == r.Count {
-			return l.LastUse < r.LastUse
+			return l.LastUse > r.LastUse
 		} else {
-			return l.Count < r.Count
+			return l.Count > r.Count
 		}
 	})
 }
