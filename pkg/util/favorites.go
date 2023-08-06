@@ -23,9 +23,9 @@ func sortFaves(favorites map[string]Favorite) {
 		r := favorites[map_keys[j]]
 
 		if l.Count == r.Count {
-			return l.LastUse > r.LastUse
+			return l.LastUse < r.LastUse
 		} else {
-			return l.Count > r.Count
+			return l.Count < r.Count
 		}
 	})
 }
@@ -40,7 +40,7 @@ func GetFavorites(path string) (map[string]interface{}, error) {
 	map_keys := maps.Keys(payload)
 	favorites := map[string]interface{}{}
 	for idx, key := range map_keys {
-		if idx < 15 {
+		if idx < 20 {
 			favorites[key] = payload[key].Url
 		}
 	}
